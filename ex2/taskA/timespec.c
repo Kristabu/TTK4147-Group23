@@ -1,4 +1,4 @@
-#include <time.h>
+#include "timespec.h"
 
 struct timespec timespec_normalized(time_t sec, long nsec)
 {

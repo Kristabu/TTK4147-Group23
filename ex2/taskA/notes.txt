@@ -17,11 +17,11 @@ task a
 
     busy, sleep
         busy()
-        real    0m0.006s
-        user    0m0.002s
-        sys     0m0.004s
+        real    0m1.006s
+        user    0m1.003s
+        sys     0m0.005s
 
         sleep()
-        real    0m1.004s
-        user    0m0.001s
-        sys     0m0.003s
+        real    0m1.012s
+        user    0m0.210s
+        sys     0m0.802s

@@ -2,7 +2,7 @@
 #include <unistd.h>
 #include <string.h>
 #include <sys/times.h>
-#include "timespec.c"
+#include "timespec.h"
 
 void busy_wait_clock(struct timespec t)
 {
@@ -26,11 +26,15 @@ void busy_wait_times(void)
 
     long ticks_per_second = sysconf(_SC_CLK_TCK);
 
+    times(&start);
+
     while (1)
     {
-        times(&start);
+        times(&now);
 
-        clock_t elapsed = (now.tms_utime + now.tms_stime) - (start.tms_utime + start.tms_stime);
+        clock_t elapsed =
+            (now.tms_utime + now.tms_stime) -
+            (start.tms_utime + start.tms_stime);
 
         if (elapsed >= ticks_per_second)
             break;
@@ -41,7 +45,7 @@ int main(int argc, char **argv)
 {
     if (argc != 2)
     {
-        printf("Usage: %s sleep|busy\n", argv[0]);
+        printf("Usage: %s clock|times\n", argv[0]);
         return 1;
     }
 
