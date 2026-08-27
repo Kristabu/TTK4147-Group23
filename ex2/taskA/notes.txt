@@ -1,0 +1,27 @@
+task a
+    sleep, usleep, nanosleep
+        sleep()
+        real    0m1.006s
+        user    0m0.004s
+        sys     0m0.002s
+
+        usleep()
+        real    0m1.006s
+        user    0m0.002s
+        sys     0m0.004s
+
+        nanosleep()
+        real    0m1.004s
+        user    0m0.002s
+        sys     0m0.003s
+
+    busy, sleep
+        busy()
+        real    0m1.004s
+        user    0m0.995s
+        sys     0m0.003s
+
+        sleep()
+        real    0m1.006s
+        user    0m0.002s
+        sys     0m0.003s
