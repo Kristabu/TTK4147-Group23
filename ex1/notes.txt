@@ -1,0 +1,17 @@
+sleep 5 & resulted in [1] 1170
+
+man man = maual
+
+ls = list content
+cd = navigate through the files
+pwd = "print working dir", shows the current folder
+cp = copy
+mv = move or renae
+rm = remvoe/delete
+
+date = ouputs system date and time
+
+du -h test.txt = disk usage, h = human-readble size
+file test.txt = identify filetype
+cat test.txt = print content in terinal
+wc test.txt = cont cotent, lines--wors--bytes
