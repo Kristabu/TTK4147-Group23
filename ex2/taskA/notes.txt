@@ -1,27 +1,27 @@
 task a
     sleep, usleep, nanosleep
         sleep()
-        real    0m1.006s
-        user    0m0.004s
-        sys     0m0.002s
+        real    0m1.005s
+        user    0m0.005s
+        sys     0m0.000s
 
         usleep()
-        real    0m1.006s
-        user    0m0.002s
-        sys     0m0.004s
+        real    0m1.005s
+        user    0m0.000s
+        sys     0m0.005s
 
         nanosleep()
         real    0m1.004s
-        user    0m0.002s
-        sys     0m0.003s
+        user    0m0.003s
+        sys     0m0.002s
 
     busy, sleep
         busy()
-        real    0m1.006s
-        user    0m1.003s
-        sys     0m0.005s
+        real    0m1.004s
+        user    0m1.000s
+        sys     0m0.004s
 
         sleep()
-        real    0m1.012s
-        user    0m0.210s
-        sys     0m0.802s
+        real    0m1.010s
+        user    0m0.149s
+        sys     0m0.861s
