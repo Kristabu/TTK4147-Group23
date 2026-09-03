@@ -17,7 +17,7 @@ int main(int argc, char **argv)
     struct tms now;
     int ns;
 
-    int ns_max = 3000;
+    int ns_max = 1500;
     int histogram[ns_max];
     memset(histogram, 0, sizeof(int) * ns_max);
 
