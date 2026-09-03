@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdint.h>
+#include <sched.h>
 #include "timespec/timespec.h"
 #include "busy_wait/busy_wait.h"
 
@@ -16,7 +17,7 @@ int main(int argc, char **argv)
     struct tms now;
     int ns;
 
-    int ns_max = 50;
+    int ns_max = 3000;
     int histogram[ns_max];
     memset(histogram, 0, sizeof(int) * ns_max);
 
@@ -41,6 +42,7 @@ int main(int argc, char **argv)
             struct timespec t1, t2;
 
             clock_gettime(CLOCK_MONOTONIC, &t1);
+	    sched_yield();
             clock_gettime(CLOCK_MONOTONIC, &t2);
 
             struct timespec diff = timespec_sub(t2, t1);
