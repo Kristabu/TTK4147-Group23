@@ -3,7 +3,7 @@
 #include <unistd.h>
 #include <time.h>
 
-int main(int argc, char **argv)
+int sleep_test(int argc, char **argv)
 {
     if (argc != 2)
     {
