@@ -1,7 +1,7 @@
 #include "busy_wait/busy_wait.h"
 #include "timespec/timespec.h"
 
-int main(int argc, char **argv)
+int not_main(int argc, char **argv)
 {
     if (argc != 2)
     {
