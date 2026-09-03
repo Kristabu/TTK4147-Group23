@@ -2,7 +2,7 @@
 #include <unistd.h>
 #include <string.h>
 #include <sys/times.h>
-#include "timespec.h"
+#include "../timespec/timespec.h"
 
 void busy_wait_clock(struct timespec t)
 {
