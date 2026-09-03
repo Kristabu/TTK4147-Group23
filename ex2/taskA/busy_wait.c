@@ -1,8 +1,4 @@
-#include <stdio.h>
-#include <unistd.h>
-#include <string.h>
-#include <sys/times.h>
-#include "../timespec/timespec.h"
+#include "busy_wait.h"
 
 void busy_wait_clock(struct timespec t)
 {
