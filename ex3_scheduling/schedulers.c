@@ -173,7 +173,6 @@ void shortest_process_next(struct Task **tasks, int taskCount, int timeout)
         if (tasks[taskIndex]->startTime == -1)
             tasks[taskIndex]->startTime = globalTime;
         set_task_state(tasks[taskIndex], running);
-
         // Wait for task to finish
         while (tasks[taskIndex]->state != finished)
         {
