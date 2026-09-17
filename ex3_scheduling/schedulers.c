@@ -149,6 +149,49 @@ void shortest_process_next(struct Task **tasks, int taskCount, int timeout)
 void highest_response_ratio_next(struct Task **tasks, int taskCount, int timeout)
 {
     // Implement your solution here
+    // Implement your solution here
+    int taskIndex = 0;
+    int responseRatio_best = 0;
+    int responseRatio = 0; 
+    do
+    {
+        // Find the shortest available task
+        taskIndex = -1;
+
+        for (int i = 0; i < taskCount; i++)
+        {
+            responseRatio = ((globalTime - tasks[i]->arrivalTime) + tasks[i]->totalRuntime)/tasks[i]->totalRuntime;
+	    // Skip finished tasks or those that have not arrived yet
+            if (tasks[i]->state == finished || tasks[i]->arrivalTime > globalTime)
+                continue;
+
+            // Pick shortest available task
+            if (taskIndex == -1 ||
+                responseRatio > responseRatio_best)
+            {
+		responseRatio_best = responseRatio;
+                taskIndex = i;
+            }
+        }
+
+        // No task is available
+        if (taskIndex == -1)
+        {
+            continue;
+        }
+
+        // Set the task state to running
+        if (tasks[taskIndex]->startTime == -1)
+            tasks[taskIndex]->startTime = globalTime;
+        set_task_state(tasks[taskIndex], running);
+
+        // Wait for task to finish
+        while (tasks[taskIndex]->state != finished)
+        {
+            wait_for_rescheduling(1, tasks[taskIndex]);
+        }
+
+    } while (globalTime < timeout);
 }
 void shortest_remaining_time(struct Task **tasks, int taskCount, int timeout, int quantum)
 {
