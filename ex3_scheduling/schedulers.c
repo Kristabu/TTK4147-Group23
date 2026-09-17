@@ -105,6 +105,35 @@ void first_come_first_served(struct Task **tasks, int taskCount, int timeout)
 void shortest_process_next(struct Task **tasks, int taskCount, int timeout)
 {
     // Implement your solution here
+    int fallbackIdx = 0;
+
+    do
+    {
+        for (int taskIndex = 0; taskIndex < taskCount; taskIndex++)
+        {
+            // Skip finished tasks or those that have not arrived yet
+            if (tasks[taskIndex]->state == finished || tasks[taskIndex]->arrivalTime > globalTime || (tasks[taskIndex]->totalRuntime > tasks[fallbackIdx]->totalRuntime))
+            {
+                // taskIndex = (taskIndex + 1) % taskCount;
+                continue;
+            }
+        }
+
+        // Set the task state to running
+        if (tasks[fallbackIdx]->startTime == -1)
+            tasks[fallbackIdx]->startTime = globalTime;
+        set_task_state(tasks[fallbackIdx], running);
+
+        // Wait for task to finish
+        while (tasks[fallbackIdx]->state != finished)
+        {
+            wait_for_rescheduling(1, tasks[fallbackIdx]);
+        }
+
+        // Find the next task to run
+        fallbackIdx = (fallbackIdx + 1) % taskCount;
+
+    } while (globalTime < timeout);
 }
 void highest_response_ratio_next(struct Task **tasks, int taskCount, int timeout)
 {
