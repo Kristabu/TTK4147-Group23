@@ -105,36 +105,47 @@ void first_come_first_served(struct Task **tasks, int taskCount, int timeout)
 void shortest_process_next(struct Task **tasks, int taskCount, int timeout)
 {
     // Implement your solution here
-    int fallbackIdx = 0;
+    int taskIndex = 0;
 
     do
     {
-        for (int taskIndex = 0; taskIndex < taskCount; taskIndex++)
+        // Find the shortest available task
+        taskIndex = -1;
+
+        for (int i = 0; i < taskCount; i++)
         {
             // Skip finished tasks or those that have not arrived yet
-            if (tasks[taskIndex]->state == finished || tasks[taskIndex]->arrivalTime > globalTime || (tasks[taskIndex]->totalRuntime > tasks[fallbackIdx]->totalRuntime))
-            {
-                // taskIndex = (taskIndex + 1) % taskCount;
+            if (tasks[i]->state == finished || tasks[i]->arrivalTime > globalTime)
                 continue;
+
+            // Pick shortest available task
+            if (taskIndex == -1 ||
+                tasks[i]->totalRuntime < tasks[taskIndex]->totalRuntime)
+            {
+                taskIndex = i;
             }
         }
 
-        // Set the task state to running
-        if (tasks[fallbackIdx]->startTime == -1)
-            tasks[fallbackIdx]->startTime = globalTime;
-        set_task_state(tasks[fallbackIdx], running);
-
-        // Wait for task to finish
-        while (tasks[fallbackIdx]->state != finished)
+        // No task is available
+        if (taskIndex == -1)
         {
-            wait_for_rescheduling(1, tasks[fallbackIdx]);
+            continue;
         }
 
-        // Find the next task to run
-        fallbackIdx = (fallbackIdx + 1) % taskCount;
+        // Set the task state to running
+        if (tasks[taskIndex]->startTime == -1)
+            tasks[taskIndex]->startTime = globalTime;
+        set_task_state(tasks[taskIndex], running);
+
+        // Wait for task to finish
+        while (tasks[taskIndex]->state != finished)
+        {
+            wait_for_rescheduling(1, tasks[taskIndex]);
+        }
 
     } while (globalTime < timeout);
 }
+
 void highest_response_ratio_next(struct Task **tasks, int taskCount, int timeout)
 {
     // Implement your solution here
