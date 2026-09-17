@@ -1,10 +1,13 @@
+import os
 import argparse
 import matplotlib.pyplot as plt
 import matplotlib.patches as mpatches
 
 parser = argparse.ArgumentParser(description='Plot task state timeline.')
-parser.add_argument('--tasks', type=str, default='tasks.txt', help='Path to the tasks file')
-parser.add_argument('--log', type=str, default='log.txt', help='Path to the log file')
+parser.add_argument('--tasks', type=str, default='tasks.txt',
+                    help='Path to the tasks file')
+parser.add_argument('--log', type=str, default='log.txt',
+                    help='Path to the log file')
 args = parser.parse_args()
 
 # Parsing task data
@@ -39,13 +42,16 @@ with open(path, "r") as file:
             new_state = parts[5].strip(',')
             if "->" in parts:
                 log_data.append((time, task_id, old_state, new_state))
-   
+
 num_tasks = len(tasks_data)  # Dynamically handle any number of tasks
-time_slots = list(range(0, max_time + 10, 1))  # Dynamically set time slots up to max_time
+# Dynamically set time slots up to max_time
+time_slots = list(range(0, max_time + 10, 1))
 
 # Initialize states for each task
-states = {"not-arrived": -1, "idle": 0, "running": 1, "preempted": 2, "finished": 3}
-current_states = {f"Task {i}": "idle" for i in range(num_tasks)}  # Dynamically create state list
+states = {"not-arrived": -1, "idle": 0,
+          "running": 1, "preempted": 2, "finished": 3}
+current_states = {f"Task {i}": "idle" for i in range(
+    num_tasks)}  # Dynamically create state list
 
 # Initialize tasks dictionary to hold task states over time
 tasks = {f"Task {i}": [] for i in range(num_tasks)}
@@ -57,7 +63,7 @@ for time in time_slots:
             tasks[task].append(states[state])
         else:
             tasks[task].append(states["not-arrived"])
-    
+
     # Update the states based on log data
     for log in log_data:
         if log[0] == time:
@@ -65,10 +71,12 @@ for time in time_slots:
 
 # Define colors for each state
 color_map = {-1: 'white', 0: 'blue', 1: 'green', 2: 'red', 3: 'gray'}
-state_labels = {-1: "not-arrived", 0: 'Idle', 1: 'Running', 2: 'Preempted', 3: 'Finished'}
+state_labels = {-1: "not-arrived", 0: 'Idle',
+                1: 'Running', 2: 'Preempted', 3: 'Finished'}
 
 # Plot the graph using scatter points for better clarity of states
-fig, ax = plt.subplots(figsize=(18, 4 + num_tasks // 2))  # Adjust height dynamically based on number of tasks
+# Adjust height dynamically based on number of tasks
+fig, ax = plt.subplots(figsize=(18, 4 + num_tasks // 2))
 
 # Plot each task's timeline with distinct colors and markers for each state
 for i, (task, task_states) in enumerate(tasks.items()):
@@ -76,23 +84,29 @@ for i, (task, task_states) in enumerate(tasks.items()):
         ax.scatter(time_slots[j], i, color=color_map[state], s=100)
 
 # Add labels and title
-ax.set_yticks([i for i in range(num_tasks)])  # Dynamically set yticks based on the number of tasks
+# Dynamically set yticks based on the number of tasks
+ax.set_yticks([i for i in range(num_tasks)])
 ax.set_yticklabels(tasks.keys())
 ax.set_xlabel('Time')
 ax.set_ylabel('Tasks')
 ax.set_title('Task State Timeline')
 
 # Add custom legend with task state labels
-handles = [mpatches.Patch(color=color_map[state], label=state_labels[state]) for state in states.values()]
+handles = [mpatches.Patch(
+    color=color_map[state], label=state_labels[state]) for state in states.values()]
 plt.legend(handles=handles, title="Task States")
 
 # Set x-axis scale dynamically based on max_time
 plt.xticks(time_slots[0::10])  # Show every 10th time slot
 
 # Display the updated plot
-#plt.show()
+# plt.show()
+# Enable grid lines
+ax.grid(True, which='both', linestyle='--', alpha=0.5)
+ax.set_axisbelow(True)
 
 # Save the plot to a file
-output_file = args.log + '.png'
+output_file = os.path.splitext(args.log)[0] + '.png'
+# output_file = args.log + '.png'
 plt.savefig(output_file)
 print(f"Plot saved to {output_file}")
