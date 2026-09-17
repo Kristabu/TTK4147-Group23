@@ -74,7 +74,34 @@ void round_robin(struct Task **tasks, int taskCount, int timeout, int quantum)
 void first_come_first_served(struct Task **tasks, int taskCount, int timeout)
 {
     // Implement your solution here
+    int taskIndex = 0;
+
+    do
+    {
+        // Skip finished tasks or those that have not arrived yet
+        if (tasks[taskIndex]->state == finished || tasks[taskIndex]->arrivalTime > globalTime)
+        {
+            taskIndex = (taskIndex + 1) % taskCount;
+            continue;
+        }
+
+        // Set the task state to running
+        if (tasks[taskIndex]->startTime == -1)
+            tasks[taskIndex]->startTime = globalTime;
+        set_task_state(tasks[taskIndex], running);
+
+        // Wait for task to finish
+        while (tasks[taskIndex]->state != finished)
+        {
+            wait_for_rescheduling(1, tasks[taskIndex]);
+        }
+
+        // Find the next task to run
+        taskIndex = (taskIndex + 1) % taskCount;
+
+    } while (globalTime < timeout);
 }
+
 void shortest_process_next(struct Task **tasks, int taskCount, int timeout)
 {
     // Implement your solution here
