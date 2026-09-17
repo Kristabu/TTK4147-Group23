@@ -160,8 +160,8 @@ void highest_response_ratio_next(struct Task **tasks, int taskCount, int timeout
 
         for (int i = 0; i < taskCount; i++)
         {
-            responseRatio = ((globalTime - tasks[i]->arrivalTime) + tasks[i]->totalRuntime)/tasks[i]->totalRuntime;
-	    // Skip finished tasks or those that have not arrived yet
+            responseRatio = ((globalTime - tasks[i]->arrivalTime) + tasks[i]->totalRuntime) / tasks[i]->totalRuntime;
+            // Skip finished tasks or those that have not arrived yet
             if (tasks[i]->state == finished || tasks[i]->arrivalTime > globalTime)
                 continue;
 
@@ -169,7 +169,7 @@ void highest_response_ratio_next(struct Task **tasks, int taskCount, int timeout
             if (taskIndex == -1 ||
                 responseRatio > responseRatio_best)
             {
-		responseRatio_best = responseRatio;
+                responseRatio_best = responseRatio;
                 taskIndex = i;
             }
         }
@@ -200,10 +200,10 @@ void shortest_remaining_time(struct Task **tasks, int taskCount, int timeout, in
     int shortestRemainingTime = 1000;
     do
     {
-	taskIndex = -1;
+        taskIndex = -1;
         for (int i = 0; i < taskCount; i++)
         {
-	    // Skip finished tasks or those that have not arrived yet
+            // Skip finished tasks or those that have not arrived yet
             if (tasks[i]->state == finished || tasks[i]->arrivalTime > globalTime)
                 continue;
 
@@ -212,7 +212,7 @@ void shortest_remaining_time(struct Task **tasks, int taskCount, int timeout, in
             if (taskIndex == -1 ||
                 shortestRemainingTime > remainingTime)
             {
-		shortestRemainingTime = remainingTime;
+                shortestRemainingTime = remainingTime;
                 taskIndex = i;
             }
         }
@@ -245,4 +245,48 @@ void shortest_remaining_time(struct Task **tasks, int taskCount, int timeout, in
 void feedback(struct Task **tasks, int taskCount, int timeout, int quantum)
 {
     // Implement your solution here
+    int taskIndex = 0;
+
+    do
+    {
+        int lowestRuntime = 1e9;
+        taskIndex = -1;
+
+        for (int i = 0; i < taskCount; i++)
+        {
+            if (tasks[i]->state != finished && tasks[i]->arrivalTime <= globalTime)
+            {
+                // Tasks that have executed less get higher priority
+                if (tasks[i]->currentRuntime < lowestRuntime)
+                {
+                    lowestRuntime = tasks[i]->currentRuntime;
+                    taskIndex = i;
+                }
+            }
+        }
+
+        // No task is available
+        if (taskIndex == -1)
+        {
+            continue;
+        }
+
+        // Set the task state to running
+        if (tasks[taskIndex]->startTime == -1)
+            tasks[taskIndex]->startTime = globalTime;
+        set_task_state(tasks[taskIndex], running);
+
+        // Wait for the quantum interval
+        wait_for_rescheduling(quantum, tasks[taskIndex]);
+
+        //  Check if the task is finished
+        if (tasks[taskIndex]->state == finished)
+        {
+        }
+        else
+        {
+            set_task_state(tasks[taskIndex], preempted);
+        }
+
+    } while (globalTime < timeout);
 }
