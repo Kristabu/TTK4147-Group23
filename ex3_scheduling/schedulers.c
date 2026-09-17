@@ -152,7 +152,7 @@ void highest_response_ratio_next(struct Task **tasks, int taskCount, int timeout
     // Implement your solution here
     int taskIndex = 0;
     int responseRatio_best = 0;
-    int responseRatio = 0; 
+    int responseRatio = 0;
     do
     {
         // Find the shortest available task
@@ -165,7 +165,7 @@ void highest_response_ratio_next(struct Task **tasks, int taskCount, int timeout
             if (tasks[i]->state == finished || tasks[i]->arrivalTime > globalTime)
                 continue;
 
-            // Pick shortest available task
+            // Pick highest ratio available task
             if (taskIndex == -1 ||
                 responseRatio > responseRatio_best)
             {
@@ -196,6 +196,51 @@ void highest_response_ratio_next(struct Task **tasks, int taskCount, int timeout
 void shortest_remaining_time(struct Task **tasks, int taskCount, int timeout, int quantum)
 {
     // Implement your solution here
+    int taskIndex = 0;
+    int shortestRemainingTime = 1000;
+    do
+    {
+	taskIndex = -1;
+        for (int i = 0; i < taskCount; i++)
+        {
+	    // Skip finished tasks or those that have not arrived yet
+            if (tasks[i]->state == finished || tasks[i]->arrivalTime > globalTime)
+                continue;
+
+            int remainingTime = tasks[i]->totalRuntime - tasks[i]->currentRuntime;
+            // Pick highest ratio  available task
+            if (taskIndex == -1 ||
+                shortestRemainingTime > remainingTime)
+            {
+		shortestRemainingTime = remainingTime;
+                taskIndex = i;
+            }
+        }
+
+        // No task is available
+        if (taskIndex == -1)
+        {
+            continue;
+        }
+
+        // Set the task state to running
+        if (tasks[taskIndex]->startTime == -1)
+            tasks[taskIndex]->startTime = globalTime;
+        set_task_state(tasks[taskIndex], running);
+
+        // Wait for the quantum interval
+        wait_for_rescheduling(quantum, tasks[taskIndex]);
+
+        //  Check if the task is finished
+        if (tasks[taskIndex]->state == finished)
+        {
+        }
+        else
+        {
+            set_task_state(tasks[taskIndex], preempted);
+        }
+
+    } while (globalTime < timeout);
 }
 void feedback(struct Task **tasks, int taskCount, int timeout, int quantum)
 {
