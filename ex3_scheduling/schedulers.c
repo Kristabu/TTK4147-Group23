@@ -105,13 +105,8 @@ void first_come_first_served(struct Task **tasks, int taskCount, int timeout)
 void shortest_process_next(struct Task **tasks, int taskCount, int timeout)
 {
     // Implement your solution here
-<<<<<<< HEAD
-    int fallbackIdx = 0;
-	printf("i have started");
-=======
     int taskIndex = 0;
 
->>>>>>> b408681 (made SPN)
     do
     {
         // Find the shortest available task
@@ -119,15 +114,8 @@ void shortest_process_next(struct Task **tasks, int taskCount, int timeout)
 
         for (int i = 0; i < taskCount; i++)
         {
-		printf("Task id: %d, Fallback id %d", taskIndex, fallbackIdx);
             // Skip finished tasks or those that have not arrived yet
-<<<<<<< HEAD
-            if (tasks[taskIndex]->state == finished || tasks[taskIndex]->arrivalTime > globalTime)
-            {
-                // taskIndex = (taskIndex + 1) % taskCount;
-=======
             if (tasks[i]->state == finished || tasks[i]->arrivalTime > globalTime)
->>>>>>> b408681 (made SPN)
                 continue;
 
             // Pick shortest available task
@@ -136,50 +124,25 @@ void shortest_process_next(struct Task **tasks, int taskCount, int timeout)
             {
                 taskIndex = i;
             }
-	    //check runtime against fallback
-	    if(fallbackIdx == -1)
-	    {
-	       	fallbackIdx = taskIndex;
-	    }
-	    if(tasks[taskIndex]->totalRuntime < tasks[fallbackIdx]->totalRuntime)
-	    {
-		fallbackIdx = taskIndex;
-	    }
         }
 
-<<<<<<< HEAD
-	if(fallbackIdx == -1){
-		continue;
-	}
-
-        // Set the task state to running
-        if (tasks[fallbackIdx]->startTime == -1)
-            tasks[fallbackIdx]->startTime = globalTime;
-        set_task_state(tasks[fallbackIdx], running);
-	printf("Task %d set to running", fallbackIdx);
-        // Wait for task to finish
-        while (tasks[fallbackIdx]->state != finished)
-=======
         // No task is available
         if (taskIndex == -1)
->>>>>>> b408681 (made SPN)
         {
             continue;
         }
-<<<<<<< HEAD
-=======
 
         // Set the task state to running
         if (tasks[taskIndex]->startTime == -1)
             tasks[taskIndex]->startTime = globalTime;
         set_task_state(tasks[taskIndex], running);
+
         // Wait for task to finish
         while (tasks[taskIndex]->state != finished)
         {
             wait_for_rescheduling(1, tasks[taskIndex]);
         }
 
->>>>>>> b408681 (made SPN)
     } while (globalTime < timeout);
 }
 
@@ -195,4 +158,3 @@ void feedback(struct Task **tasks, int taskCount, int timeout, int quantum)
 {
     // Implement your solution here
 }
-
