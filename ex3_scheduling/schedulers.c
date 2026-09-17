@@ -106,33 +106,43 @@ void shortest_process_next(struct Task **tasks, int taskCount, int timeout)
 {
     // Implement your solution here
     int fallbackIdx = 0;
-
+	printf("i have started");
     do
     {
         for (int taskIndex = 0; taskIndex < taskCount; taskIndex++)
         {
+		printf("Task id: %d, Fallback id %d", taskIndex, fallbackIdx);
             // Skip finished tasks or those that have not arrived yet
-            if (tasks[taskIndex]->state == finished || tasks[taskIndex]->arrivalTime > globalTime || (tasks[taskIndex]->totalRuntime > tasks[fallbackIdx]->totalRuntime))
+            if (tasks[taskIndex]->state == finished || tasks[taskIndex]->arrivalTime > globalTime)
             {
                 // taskIndex = (taskIndex + 1) % taskCount;
                 continue;
             }
+	    //check runtime against fallback
+	    if(fallbackIdx == -1)
+	    {
+	       	fallbackIdx = taskIndex;
+	    }
+	    if(tasks[taskIndex]->totalRuntime < tasks[fallbackIdx]->totalRuntime)
+	    {
+		fallbackIdx = taskIndex;
+	    }
         }
+
+	if(fallbackIdx == -1){
+		continue;
+	}
 
         // Set the task state to running
         if (tasks[fallbackIdx]->startTime == -1)
             tasks[fallbackIdx]->startTime = globalTime;
         set_task_state(tasks[fallbackIdx], running);
-
+	printf("Task %d set to running", fallbackIdx);
         // Wait for task to finish
         while (tasks[fallbackIdx]->state != finished)
         {
             wait_for_rescheduling(1, tasks[fallbackIdx]);
         }
-
-        // Find the next task to run
-        fallbackIdx = (fallbackIdx + 1) % taskCount;
-
     } while (globalTime < timeout);
 }
 void highest_response_ratio_next(struct Task **tasks, int taskCount, int timeout)
@@ -147,3 +157,4 @@ void feedback(struct Task **tasks, int taskCount, int timeout, int quantum)
 {
     // Implement your solution here
 }
+
