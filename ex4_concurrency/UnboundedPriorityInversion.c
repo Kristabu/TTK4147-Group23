@@ -11,7 +11,8 @@
 #include <semaphore.h>
 #include <inttypes.h>
 
-sem_t sem;
+//sem_t sem;
+pthread_mutex_t mutex;
 pthread_barrier_t barrier;
 pthread_t threadL, threadM, threadH;
 
@@ -65,14 +66,25 @@ void create_and_start_task(pthread_t *thread, void *function, int policy, int pr
 	}
 }
 
+
+
 int main()
 {
 	// Setting up barrier and semaphore
 	int threadNum = 4;
 	pthread_barrier_init(&barrier, NULL, threadNum);
-	sem_init(&sem, 0, 1);
+	//sem_init(&sem, 0, 1);
 
 	// TODO set up priority inheritance
+
+	pthread_mutexattr_t mutex_attr;
+
+	pthread_mutexattr_init(&mutex_attr);
+
+	pthread_mutexattr_setprotocol(&mutex_attr, PTHREAD_PRIO_INHERIT);
+
+	pthread_mutex_init(&mutex, &mutex_attr);
+
 	/*
     	Initialize mutex attributes
         Set the mutex protocol in the attribute
@@ -98,8 +110,8 @@ int main()
 	printf("-------------------End test-------------------\n");
 
 	// Delete semaphore
-	sem_destroy(&sem);
-
+	//sem_destroy(&sem);
+	pthread_mutex_destroy(&mutex);
 	printf("Finished\n");
 
 	exit(EXIT_SUCCESS);
@@ -115,15 +127,16 @@ void *high_f(void *arg)
 	print_pri(&threadH, "H1: high usleep\n");
 	usleep(200 * 1000);
 	print_pri(&threadH, "H3: high priority thread waits lock\n");
-	sem_wait(&sem);
+	//sem_wait(&sem);
+	pthread_mutex_lock(&mutex);
 	print_pri(&threadH, "H4: high priority thread has lock\n");
 	print_pri(&threadH, "H5: high priority thread runs with lock\n");
 	busy_wait_ms(100);
 	print_pri(&threadH, "H6: high priority thread runs with lock\n");
 	busy_wait_ms(100);
 	print_pri(&threadH, "H7: high priority thread return lock\n");
-	sem_post(&sem);
-
+	//sem_post(&sem);
+	pthread_mutex_unlock(&mutex);
 	return NULL;
 }
 
@@ -158,7 +171,8 @@ void *low_f(void *arg)
 	pthread_barrier_wait(&barrier);
 
 	print_pri(&threadL, "L1: low priority thread waits lock\n");
-	sem_wait(&sem);
+//	sem_wait(&sem);
+	pthread_mutex_lock(&mutex);
 	print_pri(&threadL, "L2: low priority thread has lock\n");
 	print_pri(&threadL, "L3: low priority thread runs with lock\n");
 	busy_wait_ms(100);
@@ -167,7 +181,8 @@ void *low_f(void *arg)
 	print_pri(&threadL, "L5: low priority thread runs with lock\n");
 	busy_wait_ms(100);
 	print_pri(&threadL, "L6: low priority thread return lock\n");
-	sem_post(&sem);
+//	sem_post(&sem);
+	pthread_mutex_unlock(&mutex);
 
 	return NULL;
 }
