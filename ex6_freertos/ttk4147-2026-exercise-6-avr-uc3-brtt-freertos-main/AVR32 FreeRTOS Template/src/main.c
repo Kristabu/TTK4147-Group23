@@ -95,7 +95,7 @@ static void responseTask(void* args){
 	struct responseTaskArgs a = *(struct responseTaskArgs*)args;
 	while(1){
 		if(gpio_pin_is_low(a.pin.test)){
-			//busy_delay_ms(a.work_time);
+			busy_delay_ms(a.work_time);
 			gpio_set_pin_low(a.pin.response);
 			
 		} else {
@@ -108,8 +108,8 @@ static void responseTask(void* args){
 int main(){
 	init();
     xTaskCreate(responseTask, "", 1024, (&(struct responseTaskArgs){{TEST_A, RESPONSE_A}, 0 / portTICK_RATE_MS}), tskIDLE_PRIORITY + 2, NULL);
-	xTaskCreate(responseTask, "", 1024, (&(struct responseTaskArgs){{TEST_B, RESPONSE_B}, 0 / portTICK_RATE_MS}), tskIDLE_PRIORITY + 2, NULL);
-	xTaskCreate(responseTask, "", 1024, (&(struct responseTaskArgs){{TEST_C, RESPONSE_C}, 0 / portTICK_RATE_MS}), tskIDLE_PRIORITY + 1, NULL);
+    xTaskCreate(responseTask, "", 1024, (&(struct responseTaskArgs){{TEST_B, RESPONSE_B}, 0 / portTICK_RATE_MS}), tskIDLE_PRIORITY + 2, NULL);
+	xTaskCreate(responseTask, "", 1024, (&(struct responseTaskArgs){{TEST_C, RESPONSE_C}, 3 / portTICK_RATE_MS}), tskIDLE_PRIORITY + 1, NULL);
 	//xTaskCreate(taskLED0, "", 1024, NULL, tskIDLE_PRIORITY + 1, NULL);
 	//xTaskCreate(taskLED1, "", 1024, NULL, tskIDLE_PRIORITY + 1, NULL);
 	// Start the scheduler, anything after this will not run.
