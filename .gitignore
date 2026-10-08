@@ -39,3 +39,42 @@ yarn.lock
 
 # Other files to ignore
 *:Zone.Identifier*
+
+# Microchip Studio / Visual Studio user-specific files
+.vs/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+# Build output
+Debug/
+Release/
+
+# Intermediate build files
+obj/
+*.o
+*.d
+*.elf
+*.hex
+*.eep
+*.map
+*.lss
+*.a
+
+# AVR / Microchip Studio generated files
+*.atsuo
+*.componentinfo.xml
+*.vc.db
+
+# Generated dependency files
+*.dep
+
+# Programmer/debugger generated files
+*.elfsym
+*.elfsections
+*.elfsections.xml
+
+# OS/editor junk
+.DS_Store
+Thumbs.db
