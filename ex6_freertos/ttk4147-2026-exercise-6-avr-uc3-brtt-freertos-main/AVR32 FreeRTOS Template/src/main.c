@@ -82,12 +82,36 @@ static void taskLED1(void* args){
 	}
 }
 
+struct responseTaskArgs {
+	struct {
+		uint32_t test;
+		uint32_t response;
+		} pin;
+	portTickType work_time;
+	};
+
+static void responseTask(void* args){
+	const portTickType delay = 1 / portTICK_RATE_MS;
+	struct responseTaskArgs a = *(struct responseTaskArgs*)args;
+	while(1){
+		if(gpio_pin_is_low(a.pin.test)){
+			//busy_delay_ms(a.work_time);
+			gpio_set_pin_low(a.pin.response);
+			
+		} else {
+			gpio_set_pin_high(a.pin.response);
+			vTaskDelay(delay);
+		}
+	}
+}
 
 int main(){
 	init();
-        
-	xTaskCreate(taskLED0, "", 1024, NULL, tskIDLE_PRIORITY + 1, NULL);
-	xTaskCreate(taskLED1, "", 1024, NULL, tskIDLE_PRIORITY + 1, NULL);
+    xTaskCreate(responseTask, "", 1024, (&(struct responseTaskArgs){{TEST_A, RESPONSE_A}, 0 / portTICK_RATE_MS}), tskIDLE_PRIORITY + 2, NULL);
+	xTaskCreate(responseTask, "", 1024, (&(struct responseTaskArgs){{TEST_B, RESPONSE_B}, 0 / portTICK_RATE_MS}), tskIDLE_PRIORITY + 2, NULL);
+	xTaskCreate(responseTask, "", 1024, (&(struct responseTaskArgs){{TEST_C, RESPONSE_C}, 0 / portTICK_RATE_MS}), tskIDLE_PRIORITY + 1, NULL);
+	//xTaskCreate(taskLED0, "", 1024, NULL, tskIDLE_PRIORITY + 1, NULL);
+	//xTaskCreate(taskLED1, "", 1024, NULL, tskIDLE_PRIORITY + 1, NULL);
 	// Start the scheduler, anything after this will not run.
 	vTaskStartScheduler();
     
