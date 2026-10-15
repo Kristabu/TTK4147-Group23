@@ -19,6 +19,7 @@
 #define TEST_3 16
 #define RESPONSE_3 1
 
+
 int set_cpu(int cpu_id)
 {
     int num_cores = sysconf(_SC_NPROCESSORS_ONLN);
@@ -165,26 +166,34 @@ int main(void)
     struct responseTaskArgs args3 = {{TEST_3, RESPONSE_3}, 0};
 
     pthread_t thread1, thread2, thread3, dthread4, dthread5;
+    pthread_attr_t attr_task;
 
-    if (pthread_create(&thread1, NULL, responseTask, &args1) != 0)
+    pthread_attr_init(&attr_task);
+    pthread_attr_setschedpolicy(&attr_task, SCHED_FIFO);
+
+    responseTaskArgs.sched_priority = 80;
+    pthread_attr_setschedparam(&attr_task, &responseTaskArgs);
+    pthread_attr_setinheritsched(&attr_task, PTHREAD_EXPLICIT_SCHED);
+
+    if (pthread_create(&thread1, &attr_task, responseTask, &args1) != 0)
     {
         perror("pthread_create thread1");
         return 1;
     }
 
-    if (pthread_create(&thread2, NULL, responseTask, &args2) != 0)
+    if (pthread_create(&thread2, &attr_task, responseTask, &args2) != 0)
     {
         perror("pthread_create thread2");
         return 1;
     }
 
-    if (pthread_create(&thread3, NULL, responseTask, &args3) != 0)
+    if (pthread_create(&thread3, &attr_task, responseTask, &args3) != 0)
     {
         perror("pthread_create thread3");
         return 1;
     }
-//	pthread_create(&dthread4, NULL, disturbTask, NULL);
-//	pthread_create(&dthread5, NULL, disturbTask, NULL);
+//	pthread_create(&dthread4, &attr_task, disturbTask, NULL);
+//	pthread_create(&dthread5, &attr_task, disturbTask, NULL);
 
     pthread_join(thread1, NULL);
     pthread_join(thread2, NULL);
