@@ -6,6 +6,7 @@
 #include <errno.h>
 #include <stdio.h>
 #include <stdint.h>
+#include <string.h>
 #include <time.h>
 #include <wiringPi.h>
 
@@ -73,14 +74,14 @@ static void busy_delay_ms(uint32_t ms)
 
 static void *responseTask(void *args)
 {
-    // int ret = set_cpu(0);
+    int ret = set_cpu(0);
 
-    // if (ret != 0)
-    // {
-    //     fprintf(stderr, "Failed to set CPU affinity: %s\n",
-    //             strerror(ret));
-    //     return NULL;
-    // }
+    if (ret != 0)
+    {
+        fprintf(stderr, "Failed to set CPU affinity: %s\n",
+                strerror(ret));
+        return NULL;
+    }
 
     struct responseTaskArgs *a = args;
 
@@ -104,12 +105,12 @@ static void *responseTask(void *args)
     return NULL;
 }
 
-static void io_init(void)
+static int io_init(void)
 {
     if (wiringPiSetup() == -1)
     {
         fprintf(stderr, "Failed to initialize WiringPi\n");
-        return;
+        return -1;
     }
 
     pinMode(TEST_1, INPUT);
@@ -124,15 +125,20 @@ static void io_init(void)
     digitalWrite(RESPONSE_1, HIGH);
     digitalWrite(RESPONSE_2, HIGH);
     digitalWrite(RESPONSE_3, HIGH);
+
+    return 0;
 }
 
 int main(void)
 {
-    io_init();
+    if (io_init() != 0)
+    {
+        return 1;
+    }
 
     struct responseTaskArgs args1 = {{TEST_1, RESPONSE_1}, 0};
     struct responseTaskArgs args2 = {{TEST_2, RESPONSE_2}, 0};
-    struct responseTaskArgs args3 = {{TEST_3, RESPONSE_3}, 3};
+    struct responseTaskArgs args3 = {{TEST_3, RESPONSE_3}, 0};
 
     pthread_t thread1, thread2, thread3;
 
