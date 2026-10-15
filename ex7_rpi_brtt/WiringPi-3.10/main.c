@@ -31,6 +31,14 @@ int set_cpu(int cpu_id)
     return pthread_setaffinity_np(pthread_self(), sizeof(cpu_set_t), &cpu);
 }
 
+void sleep_realtime(long nanoseconds)
+{
+	struct timespec ts;
+	ts.tv_sec = nanoseconds / 1e9;
+	ts.tv_nsec = nanoseconds % (long)1e9;
+	clock_nanosleep(CLOCK_MONOTONIC, 0, &ts, NULL);
+}
+
 struct responseTaskArgs
 {
     struct
@@ -72,6 +80,21 @@ static void busy_delay_ms(uint32_t ms)
     } while (1);
 }
 
+static void *disturbTask(void *args)
+{
+	int ret = set_cpu(0);
+
+	if (ret != 0)
+    	{
+        	fprintf(stderr, "Failed to set CPU affinity: %s\n",
+                strerror(ret));
+        	return NULL;
+    	}
+	while(1){
+		asm volatile("" ::: "memory");
+	}
+}
+
 static void *responseTask(void *args)
 {
     int ret = set_cpu(0);
@@ -98,8 +121,9 @@ static void *responseTask(void *args)
         }
         else
         {
-            digitalWrite(a->pin.response, HIGH);
-        }
+            digitalWrite(a->pin.response, HIGH); 
+	}
+	sleep_realtime(2000000L);
     }
 
     return NULL;
@@ -140,7 +164,7 @@ int main(void)
     struct responseTaskArgs args2 = {{TEST_2, RESPONSE_2}, 0};
     struct responseTaskArgs args3 = {{TEST_3, RESPONSE_3}, 0};
 
-    pthread_t thread1, thread2, thread3;
+    pthread_t thread1, thread2, thread3, dthread4, dthread5;
 
     if (pthread_create(&thread1, NULL, responseTask, &args1) != 0)
     {
@@ -159,10 +183,15 @@ int main(void)
         perror("pthread_create thread3");
         return 1;
     }
+//	pthread_create(&dthread4, NULL, disturbTask, NULL);
+//	pthread_create(&dthread5, NULL, disturbTask, NULL);
 
     pthread_join(thread1, NULL);
     pthread_join(thread2, NULL);
     pthread_join(thread3, NULL);
+
+  //  pthread_join(dthread4, NULL);
+//    pthread_join(dthread5, NULL);
 
     return 0;
 }
