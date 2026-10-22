@@ -11,6 +11,8 @@
 #include <time.h>
 #include <wiringPi.h>
 
+#define ENABLE_DISTURBANCE 1
+
 #define TEST_1 8
 #define RESPONSE_1 9
 
@@ -95,7 +97,18 @@ static void *disturbTask(void *args)
     }
     while (1)
     {
-        asm volatile("" ::: "memory");
+        /* Use CPU for approximately 100 microseconds. */
+        struct timespec start, now;
+
+        clock_gettime(CLOCK_MONOTONIC, &start);
+
+        do
+        {
+            clock_gettime(CLOCK_MONOTONIC, &now);
+        } while ((now.tv_sec - start.tv_sec) * 1000000000LL + (now.tv_nsec - start.tv_nsec) < 100000LL);
+
+        /* Sleep for approximately 900 microseconds. */
+        sleep_realtime(900000L);
     }
 }
 
@@ -267,15 +280,31 @@ int main(void)
         perror("pthread_create thread3");
         return 1;
     }
-    pthread_create(&dthread4, &disturb_attr, disturbTask, NULL);
-    pthread_create(&dthread5, &disturb_attr, disturbTask, NULL);
+
+#if ENABLE_DISTURBANCE
+    ret = pthread_create(&dthread4, &disturb_attr, disturbTask, NULL);
+    if (ret != 0)
+    {
+        fprintf(stderr, "Failed to create dthread4: %s\n", strerror(ret));
+        return 1;
+    }
+
+    ret = pthread_create(&dthread5, &disturb_attr, disturbTask, NULL);
+    if (ret != 0)
+    {
+        fprintf(stderr, "Failed to create dthread5: %s\n", strerror(ret));
+        return 1;
+    }
+#endif
 
     pthread_join(thread1, NULL);
     pthread_join(thread2, NULL);
     pthread_join(thread3, NULL);
 
+#if ENABLE_DISTURBANCE
     pthread_join(dthread4, NULL);
     pthread_join(dthread5, NULL);
+#endif
 
     return 0;
 }
