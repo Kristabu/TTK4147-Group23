@@ -13,6 +13,9 @@
 
 #define ENABLE_DISTURBANCE 1
 
+#define ENABLE_MEMORY_LOCKING 1
+#define RESERVED_MEMORY_MB 16
+
 #define TEST_1 8
 #define RESPONSE_1 9
 
@@ -52,36 +55,6 @@ struct responseTaskArgs
 
     uint32_t work_time;
 };
-
-// static void busy_delay_ms(uint32_t ms)
-// {
-//     struct timespec start, now;
-
-//     clock_gettime(CLOCK_MONOTONIC, &start);
-
-//     do
-//     {
-//         clock_gettime(CLOCK_MONOTONIC, &now);
-
-//         uint64_t elapsed_ns =
-//             (uint64_t)(now.tv_sec - start.tv_sec) * 1000000000ULL;
-
-//         if (now.tv_nsec >= start.tv_nsec)
-//         {
-//             elapsed_ns += (uint64_t)(now.tv_nsec - start.tv_nsec);
-//         }
-//         else
-//         {
-//             elapsed_ns -= (uint64_t)(start.tv_nsec - now.tv_nsec);
-//         }
-
-//         if (elapsed_ns >= (uint64_t)ms * 1000000ULL)
-//         {
-//             break;
-//         }
-
-//     } while (1);
-// }
 
 static void *disturbTask(void *args)
 {
@@ -178,14 +151,50 @@ void lock_memory()
     }
 }
 
+static volatile unsigned char *reserved_memory;
+
+static int reserve_memory(void)
+{
+    size_t size = (size_t)RESERVED_MEMORY_MB * 1024 * 1024;
+
+    reserved_memory = malloc(size);
+
+    if (reserved_memory == NULL)
+    {
+        perror("malloc");
+        return -1;
+    }
+
+    /* Touch each 4 KiB page to initialize the reserved memory. */
+    for (size_t i = 0; i < size; i += 4096)
+    {
+        reserved_memory[i] = 1;
+    }
+
+    printf("Reserved %d MiB of memory\n", RESERVED_MEMORY_MB);
+
+    return 0;
+}
+
 int main(void)
 {
+
+    if (reserve_memory() != 0)
+    {
+        return 1;
+    }
+
+#if ENABLE_MEMORY_LOCKING
     lock_memory();
+#else
+    printf("Memory locking disabled\n");
+#endif
 
     if (io_init() != 0)
     {
         return 1;
     }
+
     struct responseTaskArgs args1 = {{TEST_1, RESPONSE_1}, 0};
     struct responseTaskArgs args2 = {{TEST_2, RESPONSE_2}, 0};
     struct responseTaskArgs args3 = {{TEST_3, RESPONSE_3}, 0};
