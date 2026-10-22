@@ -7,6 +7,7 @@
 #include <stdio.h>
 #include <stdint.h>
 #include <string.h>
+#include <sys/mman.h>
 #include <time.h>
 #include <wiringPi.h>
 
@@ -50,35 +51,35 @@ struct responseTaskArgs
     uint32_t work_time;
 };
 
-static void busy_delay_ms(uint32_t ms)
-{
-    struct timespec start, now;
+// static void busy_delay_ms(uint32_t ms)
+// {
+//     struct timespec start, now;
 
-    clock_gettime(CLOCK_MONOTONIC, &start);
+//     clock_gettime(CLOCK_MONOTONIC, &start);
 
-    do
-    {
-        clock_gettime(CLOCK_MONOTONIC, &now);
+//     do
+//     {
+//         clock_gettime(CLOCK_MONOTONIC, &now);
 
-        uint64_t elapsed_ns =
-            (uint64_t)(now.tv_sec - start.tv_sec) * 1000000000ULL;
+//         uint64_t elapsed_ns =
+//             (uint64_t)(now.tv_sec - start.tv_sec) * 1000000000ULL;
 
-        if (now.tv_nsec >= start.tv_nsec)
-        {
-            elapsed_ns += (uint64_t)(now.tv_nsec - start.tv_nsec);
-        }
-        else
-        {
-            elapsed_ns -= (uint64_t)(start.tv_nsec - now.tv_nsec);
-        }
+//         if (now.tv_nsec >= start.tv_nsec)
+//         {
+//             elapsed_ns += (uint64_t)(now.tv_nsec - start.tv_nsec);
+//         }
+//         else
+//         {
+//             elapsed_ns -= (uint64_t)(start.tv_nsec - now.tv_nsec);
+//         }
 
-        if (elapsed_ns >= (uint64_t)ms * 1000000ULL)
-        {
-            break;
-        }
+//         if (elapsed_ns >= (uint64_t)ms * 1000000ULL)
+//         {
+//             break;
+//         }
 
-    } while (1);
-}
+//     } while (1);
+// }
 
 static void *disturbTask(void *args)
 {
@@ -115,7 +116,7 @@ static void *responseTask(void *args)
         {
             if (a->work_time > 0)
             {
-                busy_delay_ms(a->work_time);
+                sleep_realtime(a->work_time);
             }
 
             digitalWrite(a->pin.response, LOW);
@@ -154,8 +155,26 @@ static int io_init(void)
     return 0;
 }
 
+void lock_memory()
+{
+    if (mlockall(MCL_CURRENT | MCL_FUTURE) != 0)
+    {
+        perror("Failed to lock memory");
+    }
+}
+
+void sleep_realtime(long nanoseconds)
+{
+    struct timespec ts;
+    ts.tv_sec = nanoseconds / 1e9;
+    ts.tv_nsec = nanoseconds % (long)1e9;
+    clock_nanosleep(CLOCK_MONOTONIC, 0, &ts, NULL);
+}
+
 int main(void)
 {
+    lock_memory();
+
     if (io_init() != 0)
     {
         return 1;
