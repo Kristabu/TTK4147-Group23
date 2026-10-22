@@ -83,6 +83,8 @@ struct responseTaskArgs
 
 static void *disturbTask(void *args)
 {
+    (void)args;
+
     int ret = set_cpu(0);
 
     if (ret != 0)
@@ -265,15 +267,15 @@ int main(void)
         perror("pthread_create thread3");
         return 1;
     }
-    // pthread_create(&dthread4, &disturb_attr, disturbTask, NULL);
-    // pthread_create(&dthread5, &disturb_attr, disturbTask, NULL);
+    pthread_create(&dthread4, &disturb_attr, disturbTask, NULL);
+    pthread_create(&dthread5, &disturb_attr, disturbTask, NULL);
 
     pthread_join(thread1, NULL);
     pthread_join(thread2, NULL);
     pthread_join(thread3, NULL);
 
-    //  pthread_join(dthread4, NULL);
-    //    pthread_join(dthread5, NULL);
+    pthread_join(dthread4, NULL);
+    pthread_join(dthread5, NULL);
 
     return 0;
 }
