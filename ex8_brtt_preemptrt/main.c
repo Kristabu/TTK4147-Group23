@@ -163,14 +163,6 @@ void lock_memory()
     }
 }
 
-void sleep_realtime(long nanoseconds)
-{
-    struct timespec ts;
-    ts.tv_sec = nanoseconds / 1e9;
-    ts.tv_nsec = nanoseconds % (long)1e9;
-    clock_nanosleep(CLOCK_MONOTONIC, 0, &ts, NULL);
-}
-
 int main(void)
 {
     lock_memory();
