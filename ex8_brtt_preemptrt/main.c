@@ -171,42 +171,102 @@ int main(void)
     {
         return 1;
     }
-
     struct responseTaskArgs args1 = {{TEST_1, RESPONSE_1}, 0};
     struct responseTaskArgs args2 = {{TEST_2, RESPONSE_2}, 0};
     struct responseTaskArgs args3 = {{TEST_3, RESPONSE_3}, 0};
 
-    struct sched_param param_task;
-
     pthread_t thread1, thread2, thread3, dthread4, dthread5;
-    pthread_attr_t attr_task;
 
-    pthread_attr_init(&attr_task);
-    pthread_attr_setschedpolicy(&attr_task, SCHED_FIFO);
+    pthread_attr_t response_attr;
+    pthread_attr_t disturb_attr;
 
-    param_task.sched_priority = 80;
-    pthread_attr_setschedparam(&attr_task, &param_task);
-    pthread_attr_setinheritsched(&attr_task, PTHREAD_EXPLICIT_SCHED);
+    struct sched_param response_param = {
+        .sched_priority = 80};
 
-    if (pthread_create(&thread1, &attr_task, responseTask, &args1) != 0)
+    struct sched_param disturb_param = {
+        .sched_priority = 40};
+
+    int ret;
+
+    /* Configure response tasks: SCHED_RR, priority 80 */
+    ret = pthread_attr_init(&response_attr);
+    if (ret != 0)
+    {
+        fprintf(stderr, "pthread_attr_init: %s\n", strerror(ret));
+        return 1;
+    }
+
+    ret = pthread_attr_setschedpolicy(&response_attr, SCHED_RR);
+    if (ret != 0)
+    {
+        fprintf(stderr, "setschedpolicy response: %s\n", strerror(ret));
+        return 1;
+    }
+
+    ret = pthread_attr_setschedparam(&response_attr, &response_param);
+    if (ret != 0)
+    {
+        fprintf(stderr, "setschedparam response: %s\n", strerror(ret));
+        return 1;
+    }
+
+    ret = pthread_attr_setinheritsched(
+        &response_attr, PTHREAD_EXPLICIT_SCHED);
+    if (ret != 0)
+    {
+        fprintf(stderr, "setinheritsched response: %s\n", strerror(ret));
+        return 1;
+    }
+
+    /* Configure disturbance tasks: SCHED_RR, priority 40 */
+    ret = pthread_attr_init(&disturb_attr);
+    if (ret != 0)
+    {
+        fprintf(stderr, "pthread_attr_init: %s\n", strerror(ret));
+        return 1;
+    }
+
+    ret = pthread_attr_setschedpolicy(&disturb_attr, SCHED_RR);
+    if (ret != 0)
+    {
+        fprintf(stderr, "setschedpolicy disturbance: %s\n", strerror(ret));
+        return 1;
+    }
+
+    ret = pthread_attr_setschedparam(&disturb_attr, &disturb_param);
+    if (ret != 0)
+    {
+        fprintf(stderr, "setschedparam disturbance: %s\n", strerror(ret));
+        return 1;
+    }
+
+    ret = pthread_attr_setinheritsched(
+        &disturb_attr, PTHREAD_EXPLICIT_SCHED);
+    if (ret != 0)
+    {
+        fprintf(stderr, "setinheritsched disturbance: %s\n", strerror(ret));
+        return 1;
+    }
+
+    if (pthread_create(&thread1, &response_attr, responseTask, &args1) != 0)
     {
         perror("pthread_create thread1");
         return 1;
     }
 
-    if (pthread_create(&thread2, &attr_task, responseTask, &args2) != 0)
+    if (pthread_create(&thread2, &response_attr, responseTask, &args2) != 0)
     {
         perror("pthread_create thread2");
         return 1;
     }
 
-    if (pthread_create(&thread3, &attr_task, responseTask, &args3) != 0)
+    if (pthread_create(&thread3, &response_attr, responseTask, &args3) != 0)
     {
         perror("pthread_create thread3");
         return 1;
     }
-    //	pthread_create(&dthread4, &attr_task, disturbTask, NULL);
-    //	pthread_create(&dthread5, &attr_task, disturbTask, NULL);
+    // pthread_create(&dthread4, &disturb_attr, disturbTask, NULL);
+    // pthread_create(&dthread5, &disturb_attr, disturbTask, NULL);
 
     pthread_join(thread1, NULL);
     pthread_join(thread2, NULL);
