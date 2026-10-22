@@ -19,7 +19,6 @@
 #define TEST_3 16
 #define RESPONSE_3 1
 
-
 int set_cpu(int cpu_id)
 {
     int num_cores = sysconf(_SC_NPROCESSORS_ONLN);
@@ -34,10 +33,10 @@ int set_cpu(int cpu_id)
 
 void sleep_realtime(long nanoseconds)
 {
-	struct timespec ts;
-	ts.tv_sec = nanoseconds / 1e9;
-	ts.tv_nsec = nanoseconds % (long)1e9;
-	clock_nanosleep(CLOCK_MONOTONIC, 0, &ts, NULL);
+    struct timespec ts;
+    ts.tv_sec = nanoseconds / 1e9;
+    ts.tv_nsec = nanoseconds % (long)1e9;
+    clock_nanosleep(CLOCK_MONOTONIC, 0, &ts, NULL);
 }
 
 struct responseTaskArgs
@@ -83,17 +82,18 @@ static void busy_delay_ms(uint32_t ms)
 
 static void *disturbTask(void *args)
 {
-	int ret = set_cpu(0);
+    int ret = set_cpu(0);
 
-	if (ret != 0)
-    	{
-        	fprintf(stderr, "Failed to set CPU affinity: %s\n",
+    if (ret != 0)
+    {
+        fprintf(stderr, "Failed to set CPU affinity: %s\n",
                 strerror(ret));
-        	return NULL;
-    	}
-	while(1){
-		asm volatile("" ::: "memory");
-	}
+        return NULL;
+    }
+    while (1)
+    {
+        asm volatile("" ::: "memory");
+    }
 }
 
 static void *responseTask(void *args)
@@ -122,9 +122,9 @@ static void *responseTask(void *args)
         }
         else
         {
-            digitalWrite(a->pin.response, HIGH); 
-	}
-	sleep_realtime(2000000L);
+            digitalWrite(a->pin.response, HIGH);
+        }
+        sleep_realtime(2000000L);
     }
 
     return NULL;
@@ -165,14 +165,16 @@ int main(void)
     struct responseTaskArgs args2 = {{TEST_2, RESPONSE_2}, 0};
     struct responseTaskArgs args3 = {{TEST_3, RESPONSE_3}, 0};
 
+    struct sched_param param_task;
+
     pthread_t thread1, thread2, thread3, dthread4, dthread5;
     pthread_attr_t attr_task;
 
     pthread_attr_init(&attr_task);
     pthread_attr_setschedpolicy(&attr_task, SCHED_FIFO);
 
-    responseTaskArgs.sched_priority = 80;
-    pthread_attr_setschedparam(&attr_task, &responseTaskArgs);
+    param_task.sched_priority = 80;
+    pthread_attr_setschedparam(&attr_task, &param_task);
     pthread_attr_setinheritsched(&attr_task, PTHREAD_EXPLICIT_SCHED);
 
     if (pthread_create(&thread1, &attr_task, responseTask, &args1) != 0)
@@ -192,15 +194,15 @@ int main(void)
         perror("pthread_create thread3");
         return 1;
     }
-//	pthread_create(&dthread4, &attr_task, disturbTask, NULL);
-//	pthread_create(&dthread5, &attr_task, disturbTask, NULL);
+    //	pthread_create(&dthread4, &attr_task, disturbTask, NULL);
+    //	pthread_create(&dthread5, &attr_task, disturbTask, NULL);
 
     pthread_join(thread1, NULL);
     pthread_join(thread2, NULL);
     pthread_join(thread3, NULL);
 
-  //  pthread_join(dthread4, NULL);
-//    pthread_join(dthread5, NULL);
+    //  pthread_join(dthread4, NULL);
+    //    pthread_join(dthread5, NULL);
 
     return 0;
 }
